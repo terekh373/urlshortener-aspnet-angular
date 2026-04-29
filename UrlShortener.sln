@@ -3,7 +3,31 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.37216.2 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UrlShortener.Core", "UrlShortener.Core\UrlShortener.Core.csproj", "{EE9A4FC3-8E09-4D65-8A03-F7FBE40118E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UrlShortener.Infrastructure", "UrlShortener.Infrastructure\UrlShortener.Infrastructure.csproj", "{647CB3B3-B199-4F84-A08C-96B468A291FF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UrlShortener.API", "UrlShortener.API\UrlShortener.API.csproj", "{CCC50A67-EB23-4490-8CD3-EC880FC9AD91}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EE9A4FC3-8E09-4D65-8A03-F7FBE40118E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE9A4FC3-8E09-4D65-8A03-F7FBE40118E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE9A4FC3-8E09-4D65-8A03-F7FBE40118E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE9A4FC3-8E09-4D65-8A03-F7FBE40118E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{647CB3B3-B199-4F84-A08C-96B468A291FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{647CB3B3-B199-4F84-A08C-96B468A291FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{647CB3B3-B199-4F84-A08C-96B468A291FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{647CB3B3-B199-4F84-A08C-96B468A291FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CCC50A67-EB23-4490-8CD3-EC880FC9AD91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCC50A67-EB23-4490-8CD3-EC880FC9AD91}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCC50A67-EB23-4490-8CD3-EC880FC9AD91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCC50A67-EB23-4490-8CD3-EC880FC9AD91}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
