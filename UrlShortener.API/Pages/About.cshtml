@@ -1,0 +1,40 @@
+﻿@page
+@model UrlShortener.API.Pages.AboutModel
+@{
+    ViewData["Title"] = "About";
+}
+
+<div class="container mt-5">
+    <h2>About URL Shortener</h2>
+    <hr />
+
+    @if (!Model.IsEditing)
+    {
+        <div class="card p-4 mb-3">
+            <p>@Model.Description</p>
+        </div>
+
+        @if (Model.IsAdmin)
+        {
+            <button class="btn btn-warning"
+                    onclick="document.getElementById('editForm').style.display='block';
+                                             this.style.display='none'">
+                Edit Description
+            </button>
+        }
+    }
+
+    <div id="editForm" style="display:none">
+        <form method="post">
+            @Html.AntiForgeryToken()
+            <div class="mb-3">
+                <textarea asp-for="Description" class="form-control" rows="6"></textarea>
+            </div>
+            <button type="submit" class="btn btn-success">Save</button>
+            <button type="button" class="btn btn-secondary ms-2"
+                    onclick="document.getElementById('editForm').style.display='none'">
+                Cancel
+            </button>
+        </form>
+    </div>
+</div>

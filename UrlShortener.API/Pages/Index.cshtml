@@ -1,0 +1,22 @@
+﻿@page
+@model UrlShortener.API.Pages.IndexModel
+@{
+    ViewData["Title"] = "URL Shortener";
+}
+
+@if (TempData["Token"] != null)
+{
+    <script>
+        localStorage.setItem('token', '@TempData["Token"]');
+        localStorage.setItem('username', '@TempData["Username"]');
+        localStorage.setItem('role', '@TempData["Role"]');
+    </script>
+}
+
+<!-- Here Angular app will render -->
+<app-root></app-root>
+
+<!-- Angular build (after ng build) -->
+<script src="~/angular/runtime.js" asp-append-version="true"></script>
+<script src="~/angular/polyfills.js" asp-append-version="true"></script>
+<script src="~/angular/main.js" asp-append-version="true"></script>
