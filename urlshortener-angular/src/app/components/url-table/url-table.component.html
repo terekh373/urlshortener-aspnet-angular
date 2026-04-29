@@ -1,0 +1,53 @@
+<div class="container mt-4">
+  <h2>🔗 Shortened URLs</h2>
+
+  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+
+  <app-add-url
+    *ngIf="auth.isLoggedIn()"
+    (urlAdded)="onUrlAdded($event)">
+  </app-add-url>
+
+  <table class="table table-striped mt-4">
+    <thead class="table-dark">
+      <tr>
+        <th>#</th>
+        <th>Original URL</th>
+        <th>Short URL</th>
+        <th>Created By</th>
+        <th>Created At</th>
+        <th *ngIf="auth.isLoggedIn()">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let url of urls">
+        <td>{{ url.id }}</td>
+        <td>
+          <a [href]="url.originalUrl" target="_blank">
+            {{ url.originalUrl | slice:0:40 }}{{ url.originalUrl.length > 40 ? '...' : '' }}
+          </a>
+        </td>
+        <td>
+          <a [href]="url.shortUrl" target="_blank">{{ url.shortUrl }}</a>
+        </td>
+        <td>{{ url.createdBy }}</td>
+        <td>{{ url.createdAt | date:'dd MMM yyyy HH:mm' }}</td>
+        <td *ngIf="auth.isLoggedIn()">
+          <a [href]="'/urls/details/' + url.id" class="btn btn-sm btn-info me-1">
+            Info
+          </a>
+          <button
+            *ngIf="canDelete(url)"
+            class="btn btn-sm btn-danger"
+            (click)="onDelete(url.id)">
+            Delete
+          </button>
+        </td>
+      </tr>
+      <tr *ngIf="urls.length === 0">
+        <td colspan="6" class="text-center text-muted">No URLs yet</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
