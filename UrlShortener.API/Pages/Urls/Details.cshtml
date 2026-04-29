@@ -1,0 +1,43 @@
+﻿@page "{id:int}"
+@model UrlShortener.API.Pages.Urls.DetailsModel
+@{
+    ViewData["Title"] = "URL Details";
+}
+
+<div class="container mt-5">
+    <h2>URL Details</h2>
+    <hr />
+
+    @if (Model.UrlItem == null)
+    {
+        <div class="alert alert-danger">URL not found.</div>
+    }
+    else
+    {
+        <div class="card p-4">
+            <dl class="row">
+                <dt class="col-sm-3">Original URL</dt>
+                <dd class="col-sm-9">
+                    <a href="@Model.UrlItem.OriginalUrl" target="_blank">
+                        @Model.UrlItem.OriginalUrl
+                    </a>
+                </dd>
+
+                <dt class="col-sm-3">Short URL</dt>
+                <dd class="col-sm-9">
+                    <a href="@Model.UrlItem.ShortUrl" target="_blank">
+                        @Model.UrlItem.ShortUrl
+                    </a>
+                </dd>
+
+                <dt class="col-sm-3">Created By</dt>
+                <dd class="col-sm-9">@Model.UrlItem.CreatedBy</dd>
+
+                <dt class="col-sm-3">Created At</dt>
+                <dd class="col-sm-9">@Model.UrlItem.CreatedAt.ToString("dd MMM yyyy HH:mm")</dd>
+            </dl>
+        </div>
+
+        <a href="/" class="btn btn-secondary mt-3">← Back to Table</a>
+    }
+</div>
