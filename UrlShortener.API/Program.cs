@@ -61,6 +61,13 @@ builder.Services.AddCors(options =>
 // Dependency Injection: Whenever IUrlRepository is requested, provide an instance of UrlRepository
 builder.Services.AddScoped<IUrlRepository, UrlRepository>();
 
+// Register HttpClient for URL checking with a timeout and user-agent header
+builder.Services.AddHttpClient("UrlChecker", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(10);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+});
+
 builder.Services.AddControllers();
 builder.Services.AddRazorPages();
 builder.Services.AddEndpointsApiExplorer();

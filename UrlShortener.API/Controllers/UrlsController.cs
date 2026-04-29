@@ -11,8 +11,15 @@ namespace UrlShortener.API.Controllers;
 public class UrlsController : ControllerBase
 {
     private readonly IUrlRepository _repo;
+    private readonly IHttpClientFactory _httpClientFactory;
 
-    public UrlsController(IUrlRepository repo) => _repo = repo;
+
+    public UrlsController(IUrlRepository repo, IHttpClientFactory httpClientFactory)
+    {
+        _repo = repo;
+        _httpClientFactory = httpClientFactory;
+    }
+
 
     // GET api/urls
     [HttpGet]
@@ -55,9 +62,19 @@ public class UrlsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateUrlDto dto)
     {
+        if (!Uri.TryCreate(dto.OriginalUrl, UriKind.Absolute, out var uriResult)
+            || (uriResult.Scheme != Uri.UriSchemeHttp && uriResult.Scheme != Uri.UriSchemeHttps))
+        {
+            return BadRequest(new { message = "Invalid URL format. Must start with http:// or https://" });
+        }
+
         var existing = await _repo.GetByOriginalUrlAsync(dto.OriginalUrl);
         if (existing != null)
             return BadRequest(new { message = "This URL already exists" });
+
+        var urlExists = await CheckUrlExistsAsync(dto.OriginalUrl);
+        if (!urlExists)
+            return BadRequest(new { message = "URL is not reachable. Please check the URL and try again." });
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
@@ -102,6 +119,23 @@ public class UrlsController : ControllerBase
         await _repo.DeleteAsync(id);
         await _repo.SaveChangesAsync();
         return NoContent();
+    }
+
+
+    // Checks if the URL is reachable by sending a HEAD request. This is more efficient than a GET request because it doesn't download the entire content of the page, just checks if the server responds with a success status code.
+    private async Task<bool> CheckUrlExistsAsync(string url)
+    {
+        try
+        {
+            var client = _httpClientFactory.CreateClient("UrlChecker");
+            var request = new HttpRequestMessage(HttpMethod.Head, url);
+            var response = await client.SendAsync(request);
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     // Algorithm to generate a unique short code for the URL. In a real application, you would want to ensure uniqueness and handle potential collisions, but for simplicity, we just generate a random string here.
