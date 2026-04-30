@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ShortenedUrl } from '../../models/url.model';
 import { UrlService } from '../../core/services/url.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -8,13 +9,19 @@ import { AddUrlComponent } from '../add-url/add-url.component';
 @Component({
   selector: 'app-url-table',
   standalone: true,
-  imports: [CommonModule, AddUrlComponent],
+  imports: [CommonModule, AddUrlComponent, FormsModule],
   templateUrl: './url-table.component.html'
 })
 export class UrlTableComponent implements OnInit {
   urls: ShortenedUrl[] = [];
   errorMessage = '';
   successMessage = '';
+  copiedId: number | null = null;
+
+  searchQuery = '';
+
+  sortColumn: keyof ShortenedUrl = 'createdAt';
+  sortDirection: 'asc' | 'desc' = 'desc';
 
   constructor(
     public urlService: UrlService,
@@ -50,5 +57,61 @@ export class UrlTableComponent implements OnInit {
   canDelete(url: ShortenedUrl): boolean {
     return this.auth.isAdmin() ||
            url.createdBy === this.auth.getUsername();
+  }
+
+  // Copy to clipboard
+  copyToClipboard(url: ShortenedUrl): void {
+    navigator.clipboard.writeText(url.shortUrl).then(() => {
+      this.copiedId = url.id;
+      setTimeout(() => this.copiedId = null, 2000);
+    });
+  }
+
+  sortBy(column: keyof ShortenedUrl): void {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+  }
+
+  // returns icon header
+  getSortIcon(column: keyof ShortenedUrl): string {
+    if (this.sortColumn !== column) return '↕';
+    return this.sortDirection === 'asc' ? '↑' : '↓';
+  }
+
+  // returns filtered and sorted array
+  get filteredAndSortedUrls(): ShortenedUrl[] {
+    let result = [...this.urls];
+
+    if (this.searchQuery.trim()) {
+      const query = this.searchQuery.toLowerCase();
+      result = result.filter(u =>
+        u.originalUrl.toLowerCase().includes(query) ||
+        u.shortCode.toLowerCase().includes(query) ||
+        u.createdBy?.toLowerCase().includes(query)
+      );
+    }
+
+    result.sort((a, b) => {
+      const valA = a[this.sortColumn];
+      const valB = b[this.sortColumn];
+
+      if (valA == null) return 1;
+      if (valB == null) return -1;
+
+      let comparison = 0;
+      if (typeof valA === 'string' && typeof valB === 'string') {
+        comparison = valA.localeCompare(valB);
+      } else {
+        comparison = valA < valB ? -1 : valA > valB ? 1 : 0;
+      }
+
+      return this.sortDirection === 'asc' ? comparison : -comparison;
+    });
+
+    return result;
   }
 }
