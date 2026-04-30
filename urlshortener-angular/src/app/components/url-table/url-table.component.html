@@ -1,40 +1,81 @@
 <div class="container mt-4">
   <h2>🔗 Shortened URLs</h2>
 
-  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
-  <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+  </div>
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    {{ errorMessage }}
+  </div>
 
+  <!-- Adding form, only for logged in users -->
   <app-add-url
     *ngIf="auth.isLoggedIn()"
     (urlAdded)="onUrlAdded($event)">
   </app-add-url>
 
-  <table class="table table-striped mt-4">
+  <div class="mb-3">
+    <input
+      [(ngModel)]="searchQuery"
+      type="text"
+      class="form-control"
+      placeholder="🔍 Search by URL, short code or author..." />
+  </div>
+
+  <table class="table table-striped table-hover mt-2">
     <thead class="table-dark">
       <tr>
-        <th>#</th>
-        <th>Original URL</th>
+        <th style="cursor:pointer" (click)="sortBy('id')">
+          # {{ getSortIcon('id') }}
+        </th>
+        <th style="cursor:pointer" (click)="sortBy('originalUrl')">
+          Original URL {{ getSortIcon('originalUrl') }}
+        </th>
         <th>Short URL</th>
-        <th>Created By</th>
-        <th>Created At</th>
+        <th style="cursor:pointer" (click)="sortBy('createdBy')">
+          Created By {{ getSortIcon('createdBy') }}
+        </th>
+        <th style="cursor:pointer" (click)="sortBy('createdAt')">
+          Created At {{ getSortIcon('createdAt') }}
+        </th>
+        <th style="cursor:pointer" (click)="sortBy('clickCount')">
+          Clicks {{ getSortIcon('clickCount') }}
+        </th>
         <th *ngIf="auth.isLoggedIn()">Actions</th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let url of urls">
+      <tr *ngFor="let url of filteredAndSortedUrls">
         <td>{{ url.id }}</td>
         <td>
           <a [href]="url.originalUrl" target="_blank">
-            {{ url.originalUrl | slice:0:40 }}{{ url.originalUrl.length > 40 ? '...' : '' }}
+            {{ url.originalUrl | slice:0:40 }}
+            {{ url.originalUrl.length > 40 ? '...' : '' }}
           </a>
         </td>
         <td>
-          <a [href]="url.shortUrl" target="_blank">{{ url.shortUrl }}</a>
+          <div class="d-flex align-items-center gap-2">
+            <a [href]="url.shortUrl" target="_blank">
+              {{ url.shortUrl }}
+            </a>
+            <!-- Copy button -->
+            <button
+              class="btn btn-sm btn-outline-secondary py-0 px-1"
+              (click)="copyToClipboard(url)"
+              title="Copy to clipboard">
+              {{ copiedId === url.id ? '✅' : '📋' }}
+            </button>
+          </div>
         </td>
         <td>{{ url.createdBy }}</td>
         <td>{{ url.createdAt | date:'dd MMM yyyy HH:mm' }}</td>
+        <td>
+          <span class="badge bg-secondary">{{ url.clickCount }}</span>
+        </td>
         <td *ngIf="auth.isLoggedIn()">
-          <a [href]="'/urls/details/' + url.id" class="btn btn-sm btn-info me-1">
+          
+            [href]="'/urls/details/' + url.id"
+            class="btn btn-sm btn-info me-1">
             Info
           </a>
           <button
@@ -45,9 +86,21 @@
           </button>
         </td>
       </tr>
+
+      <tr *ngIf="filteredAndSortedUrls.length === 0 && searchQuery">
+        <td colspan="7" class="text-center text-muted">
+          No URLs found for "{{ searchQuery }}"
+        </td>
+      </tr>
+
       <tr *ngIf="urls.length === 0">
-        <td colspan="6" class="text-center text-muted">No URLs yet</td>
+        <td colspan="7" class="text-center text-muted">No URLs yet</td>
       </tr>
     </tbody>
   </table>
+
+  <!-- Result counter -->
+  <small class="text-muted" *ngIf="searchQuery">
+    Showing {{ filteredAndSortedUrls.length }} of {{ urls.length }} URLs
+  </small>
 </div>
