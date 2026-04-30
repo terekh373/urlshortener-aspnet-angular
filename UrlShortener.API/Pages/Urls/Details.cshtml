@@ -35,9 +35,12 @@
 
                 <dt class="col-sm-3">Created At</dt>
                 <dd class="col-sm-9">@Model.UrlItem.CreatedAt.ToString("dd MMM yyyy HH:mm")</dd>
+
+                <dt class="col-sm-3">Clicks</dt>
+                <dd class="col-sm-9">@Model.UrlItem.ClickCount</dd>
             </dl>
         </div>
 
-        <a href="/" class="btn btn-secondary mt-3">← Back to Table</a>
+        <a href="http://localhost:4200" class="btn btn-secondary mt-3">← Back to Table</a>
     }
 </div>
