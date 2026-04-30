@@ -33,6 +33,7 @@ public class UrlsController : ControllerBase
             u.ShortCode,
             ShortUrl = $"{Request.Scheme}://{Request.Host}/s/{u.ShortCode}",
             u.CreatedAt,
+            u.ClickCount,
             CreatedBy = u.CreatedBy?.UserName
         });
         return Ok(result);
@@ -53,6 +54,7 @@ public class UrlsController : ControllerBase
             url.ShortCode,
             ShortUrl = $"{Request.Scheme}://{Request.Host}/s/{url.ShortCode}",
             url.CreatedAt,
+            url.ClickCount,
             CreatedBy = url.CreatedBy?.UserName
         });
     }

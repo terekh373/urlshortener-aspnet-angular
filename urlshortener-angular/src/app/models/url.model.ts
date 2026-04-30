@@ -4,5 +4,6 @@ export interface ShortenedUrl {
   shortCode: string;
   shortUrl: string;
   createdAt: string;
+  clickCount: number;
   createdBy: string;
 }

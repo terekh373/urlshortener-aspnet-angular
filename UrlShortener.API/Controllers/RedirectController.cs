@@ -18,6 +18,8 @@ public class RedirectController : ControllerBase
         var url = await _repo.GetByShortCodeAsync(shortCode);
         if (url == null) return NotFound("Short URL not found");
 
+        await _repo.IncrementClickCountAsync(shortCode);
+
         return Redirect(url.OriginalUrl);
     }
 }

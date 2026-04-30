@@ -10,5 +10,6 @@ public interface IUrlRepository
     Task<ShortenedUrl?> GetByShortCodeAsync(string shortCode);
     Task AddAsync(ShortenedUrl url);
     Task DeleteAsync(int id);
+    Task IncrementClickCountAsync(string shortCode);
     Task SaveChangesAsync();
 }
