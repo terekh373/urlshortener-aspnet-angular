@@ -6,7 +6,7 @@ import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class UrlService {
-  private apiUrl = 'https://localhost:7222/api/urls';
+  private apiUrl = 'https://localhost:7150/api/urls';
 
   constructor(private http: HttpClient, private auth: AuthService) {}
 
