@@ -32,5 +32,16 @@ public class UrlRepository : IUrlRepository
         if (url != null) _db.ShortenedUrls.Remove(url);
     }
 
+    public async Task IncrementClickCountAsync(string shortCode)
+    {
+        var url = await _db.ShortenedUrls
+                           .FirstOrDefaultAsync(x => x.ShortCode == shortCode);
+        if (url != null)
+        {
+            url.ClickCount++;
+            await _db.SaveChangesAsync();
+        }
+    }
+
     public async Task SaveChangesAsync() => await _db.SaveChangesAsync();
 }
