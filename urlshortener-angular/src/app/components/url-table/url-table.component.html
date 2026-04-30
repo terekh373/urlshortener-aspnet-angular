@@ -66,7 +66,7 @@
           <span class="badge bg-secondary">{{ url.clickCount }}</span>
         </td>
         <td *ngIf="auth.isLoggedIn()">
-          <a [href]="'/urls/details/' + url.id" class="btn btn-sm btn-info me-1">Info</a>
+          <a [href]="getDetailsUrl(url.id)" class="btn btn-sm btn-info me-1">Info</a>
           <button *ngIf="canDelete(url)" class="btn btn-sm btn-danger" (click)="onDelete(url.id)">Delete</button>
         </td>
       </tr>

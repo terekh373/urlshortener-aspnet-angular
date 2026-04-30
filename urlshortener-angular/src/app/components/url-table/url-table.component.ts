@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ShortenedUrl } from '../../models/url.model';
@@ -17,24 +17,27 @@ export class UrlTableComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
   copiedId: number | null = null;
-
   searchQuery = '';
-
   sortColumn: keyof ShortenedUrl = 'createdAt';
   sortDirection: 'asc' | 'desc' = 'desc';
 
   constructor(
     public urlService: UrlService,
-    public auth: AuthService
-  ) {}
+    public auth: AuthService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
     this.loadUrls();
+    setInterval(() => this.loadUrls(), 10000);
   }
 
   loadUrls(): void {
     this.urlService.getAll().subscribe({
-      next: (data) => this.urls = data,
+      next: (data) => {
+        this.urls = [...data];
+        this.cdr.detectChanges();
+      },
       error: () => this.errorMessage = 'Failed to load URLs'
     });
   }
@@ -42,13 +45,16 @@ export class UrlTableComponent implements OnInit {
   onUrlAdded(url: ShortenedUrl): void {
     this.urls = [...this.urls, url];
     this.successMessage = 'URL added successfully!';
+    this.cdr.detectChanges();
     setTimeout(() => this.successMessage = '', 3000);
   }
 
   onDelete(id: number): void {
+    if (!confirm('Are you sure you want to delete this URL?')) return;
     this.urlService.delete(id).subscribe({
       next: () => {
         this.urls = this.urls.filter(u => u.id !== id);
+        this.cdr.detectChanges();
       },
       error: () => this.errorMessage = 'Failed to delete URL'
     });
@@ -56,14 +62,17 @@ export class UrlTableComponent implements OnInit {
 
   canDelete(url: ShortenedUrl): boolean {
     return this.auth.isAdmin() ||
-           url.createdBy === this.auth.getUsername();
+      url.createdBy === this.auth.getUsername();
   }
 
-  // Copy to clipboard
   copyToClipboard(url: ShortenedUrl): void {
     navigator.clipboard.writeText(url.shortUrl).then(() => {
       this.copiedId = url.id;
-      setTimeout(() => this.copiedId = null, 2000);
+      this.cdr.detectChanges();
+      setTimeout(() => {
+        this.copiedId = null;
+        this.cdr.detectChanges();
+      }, 2000);
     });
   }
 
@@ -74,33 +83,34 @@ export class UrlTableComponent implements OnInit {
       this.sortColumn = column;
       this.sortDirection = 'asc';
     }
+    this.cdr.detectChanges();
   }
 
-  // returns icon header
   getSortIcon(column: keyof ShortenedUrl): string {
     if (this.sortColumn !== column) return '↕';
     return this.sortDirection === 'asc' ? '↑' : '↓';
   }
 
-  // returns filtered and sorted array
+  getDetailsUrl(id: number): string {
+    const token = this.auth.getToken();
+    return `https://localhost:7150/urls/details/${id}?token=${token}`;
+  }
+
   get filteredAndSortedUrls(): ShortenedUrl[] {
     let result = [...this.urls];
 
-    if (this.searchQuery.trim()) {
-      const query = this.searchQuery.toLowerCase();
+    const query = this.searchQuery.trim().toLowerCase();
+    if (query) {
       result = result.filter(u =>
         u.originalUrl.toLowerCase().includes(query) ||
         u.shortCode.toLowerCase().includes(query) ||
-        u.createdBy?.toLowerCase().includes(query)
+        (u.createdBy?.toLowerCase() ?? '').includes(query)
       );
     }
 
     result.sort((a, b) => {
-      const valA = a[this.sortColumn];
-      const valB = b[this.sortColumn];
-
-      if (valA == null) return 1;
-      if (valB == null) return -1;
+      const valA = a[this.sortColumn] ?? '';
+      const valB = b[this.sortColumn] ?? '';
 
       let comparison = 0;
       if (typeof valA === 'string' && typeof valB === 'string') {

@@ -1,0 +1,27 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container">
+    <a class="navbar-brand" href="/">🔗 URL Shortener</a>
+    <div class="navbar-nav ms-auto">
+      <a class="nav-link text-white" href="https://localhost:7150/about">
+        About
+      </a>
+
+      <ng-container *ngIf="!auth.isLoggedIn()">
+        <a class="nav-link text-white" href="/login">Login</a>
+        <a class="nav-link text-white"
+           href="https://localhost:7150/register">Register</a>
+      </ng-container>
+
+      <ng-container *ngIf="auth.isLoggedIn()">
+        <span class="nav-link text-warning">
+          {{ auth.getUsername() }}
+          <span *ngIf="auth.isAdmin()"
+                class="badge bg-danger ms-1">Admin</span>
+        </span>
+        <a class="nav-link text-white"
+           href="#"
+           (click)="auth.logout()">Logout</a>
+      </ng-container>
+    </div>
+  </div>
+</nav>
