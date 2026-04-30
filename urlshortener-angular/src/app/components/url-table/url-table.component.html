@@ -9,16 +9,11 @@
   </div>
 
   <!-- Adding form, only for logged in users -->
-  <app-add-url
-    *ngIf="auth.isLoggedIn()"
-    (urlAdded)="onUrlAdded($event)">
+  <app-add-url *ngIf="auth.isLoggedIn()" (urlAdded)="onUrlAdded($event)">
   </app-add-url>
 
   <div class="mb-3">
-    <input
-      [(ngModel)]="searchQuery"
-      type="text"
-      class="form-control"
+    <input [(ngModel)]="searchQuery" type="text" class="form-control"
       placeholder="🔍 Search by URL, short code or author..." />
   </div>
 
@@ -59,9 +54,7 @@
               {{ url.shortUrl }}
             </a>
             <!-- Copy button -->
-            <button
-              class="btn btn-sm btn-outline-secondary py-0 px-1"
-              (click)="copyToClipboard(url)"
+            <button class="btn btn-sm btn-outline-secondary py-0 px-1" (click)="copyToClipboard(url)"
               title="Copy to clipboard">
               {{ copiedId === url.id ? '✅' : '📋' }}
             </button>
@@ -73,17 +66,8 @@
           <span class="badge bg-secondary">{{ url.clickCount }}</span>
         </td>
         <td *ngIf="auth.isLoggedIn()">
-          
-            [href]="'/urls/details/' + url.id"
-            class="btn btn-sm btn-info me-1">
-            Info
-          </a>
-          <button
-            *ngIf="canDelete(url)"
-            class="btn btn-sm btn-danger"
-            (click)="onDelete(url.id)">
-            Delete
-          </button>
+          <a [href]="'/urls/details/' + url.id" class="btn btn-sm btn-info me-1">Info</a>
+          <button *ngIf="canDelete(url)" class="btn btn-sm btn-danger" (click)="onDelete(url.id)">Delete</button>
         </td>
       </tr>
 
