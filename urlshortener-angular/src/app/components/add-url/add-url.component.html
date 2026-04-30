@@ -1,0 +1,28 @@
+<div class="card p-3 mb-3 bg-light">
+  <h5>Add New URL</h5>
+
+  <div *ngIf="errorMessage" class="alert alert-danger py-2">
+    {{ errorMessage }}
+  </div>
+
+  <div class="input-group">
+    <input
+      [(ngModel)]="originalUrl"
+      type="text"
+      class="form-control"
+      [class.is-invalid]="errorMessage && !isValidUrl(originalUrl) && originalUrl.length > 0"
+      [class.is-valid]="isValidUrl(originalUrl)"
+      placeholder="https://example.com/very/long/url"
+      (keyup.enter)="onSubmit()" />
+    <button
+      class="btn btn-primary"
+      (click)="onSubmit()"
+      [disabled]="isLoading || !originalUrl.trim()">
+      {{ isLoading ? 'Adding...' : 'Shorten' }}
+    </button>
+  </div>
+
+  <small class="text-muted mt-1 d-block">
+    URL must start with http:// or https://
+  </small>
+</div>

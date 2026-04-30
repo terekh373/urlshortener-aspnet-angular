@@ -1,53 +1,114 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using UrlShortener.Core.Entities;
+using UrlShortener.Core.Interfaces;
+using UrlShortener.Infrastructure.Data;
+using UrlShortener.Infrastructure.Repositories;
 
-namespace UrlShortener.API
+var builder = WebApplication.CreateBuilder(args);
+
+// 1. DB Context
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+
+// 2. Identity with custom password settings (for simplicity) and EF store
+builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 {
-    public class Program
+    options.Password.RequireDigit = false;
+    options.Password.RequiredLength = 4;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+})
+.AddEntityFrameworkStores<AppDbContext>()
+.AddDefaultTokenProviders();
+
+// 3. JWT Authentication
+var jwt = builder.Configuration.GetSection("JwtSettings");
+var key = Encoding.UTF8.GetBytes(jwt["Secret"]!);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        public static void Main(string[] args)
-        {
-            var builder = WebApplication.CreateBuilder(args);
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwt["Issuer"],
+        ValidAudience = jwt["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(key)
+    };
+});
 
-            // Add services to the container.
-            builder.Services.AddAuthorization();
+// 4. CORS — allows Angular to access the API
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular", policy =>
+        policy.WithOrigins("http://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
 
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+// 5. Register our Repository
+// Dependency Injection: Whenever IUrlRepository is requested, provide an instance of UrlRepository
+builder.Services.AddScoped<IUrlRepository, UrlRepository>();
 
-            var app = builder.Build();
+// Register HttpClient for URL checking with a timeout and user-agent header
+builder.Services.AddHttpClient("UrlChecker", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(10);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+});
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+builder.Services.AddControllers();
+builder.Services.AddRazorPages();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-            app.UseHttpsRedirection();
+var app = builder.Build();
 
-            app.UseAuthorization();
+// 6. Create roles and Admin user at startup
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
 
-            var summaries = new[]
-            {
-                "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-            };
+    // Create roles if they don't exist
+    foreach (var role in new[] { "Admin", "User" })
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+            await roleManager.CreateAsync(new IdentityRole(role));
+    }
 
-            app.MapGet("/weatherforecast", (HttpContext httpContext) =>
-            {
-                var forecast = Enumerable.Range(1, 5).Select(index =>
-                    new WeatherForecast
-                    {
-                        Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                        TemperatureC = Random.Shared.Next(-20, 55),
-                        Summary = summaries[Random.Shared.Next(summaries.Length)]
-                    })
-                    .ToArray();
-                return forecast;
-            })
-            .WithName("GetWeatherForecast")
-            .WithOpenApi();
-
-            app.Run();
-        }
+    // Create Admin user if it doesn't exist
+    var admin = await userManager.FindByNameAsync("admin");
+    if (admin == null)
+    {
+        admin = new AppUser { UserName = "admin", Email = "admin@admin.com" };
+        await userManager.CreateAsync(admin, "admin123");
+        await userManager.AddToRoleAsync(admin, "Admin");
     }
 }
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+app.UseCors("AllowAngular");
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
+app.MapRazorPages();
+
+app.Run();
