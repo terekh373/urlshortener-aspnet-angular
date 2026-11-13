@@ -9,7 +9,7 @@ A full-stack URL Shortener application.
 | Layer | Technology |
 |---|---|
 | Backend | ASP.NET Core 8 Web API |
-| Frontend | Angular 17 (standalone), Razor Pages |
+| Frontend | Angular 21 (standalone), Razor Pages |
 | Database | SQL Server LocalDB via Entity Framework Core (Code First) |
 | Authentication | ASP.NET Core Identity + JWT |
 | Tests | xUnit + Moq |
@@ -51,7 +51,7 @@ UrlShortener/
 ├── UrlShortener.Tests/          # xUnit + Moq unit tests
 │   ├── Controllers/             # UrlsControllerTests
 │   └── Repositories/            # UrlRepositoryTests
-└── urlshortener-angular/        # Angular 17 SPA
+└── urlshortener-angular/        # Angular 21 SPA
     └── src/app/
         ├── components/          # url-table, add-url, login, navbar
         ├── core/                # services, interceptors
@@ -254,7 +254,9 @@ Before saving, each generated code is checked for uniqueness in the database. Th
 
 ---
 
-## ✅ Unit Tests
+## ✅ Unit Tests (13)
+
+Repository tests run against EF Core InMemory; controller tests mock the repository with Moq.
 
 | Test | Description |
 |---|---|
@@ -263,9 +265,12 @@ Before saving, each generated code is checked for uniqueness in the database. Th
 | `GetByOriginalUrlAsync_ShouldReturnUrl_WhenExists` | Finds by original URL |
 | `GetByOriginalUrlAsync_ShouldReturnNull_WhenNotExists` | Returns null if not found |
 | `DeleteAsync_ShouldRemoveUrl` | Record is deleted |
+| `GetByShortCodeAsync_ShouldReturnCorrectUrl` | Finds record by short code |
 | `GetAll_ShouldReturnOk` | Returns 200 OK |
+| `GetById_ShouldReturnNotFound_WhenUrlDoesNotExist` | Unknown id returns 404 |
 | `Create_ShouldReturnBadRequest_WhenUrlAlreadyExists` | Duplicate is rejected |
 | `Create_ShouldReturnBadRequest_WhenUrlFormatIsInvalid` | Invalid format rejected |
 | `Delete_ShouldReturnForbid_WhenUserDeletesOthersUrl` | Cannot delete someone else's URL |
 | `Delete_ShouldReturnNoContent_WhenAdminDeletesAnyUrl` | Admin can delete any URL |
+| `Delete_ShouldReturnNotFound_WhenUrlDoesNotExist` | Deleting an unknown id returns 404 |
 | `Delete_ShouldReturnNotFound_WhenUrlDoesNotExist` | Returns 404 if not found |
